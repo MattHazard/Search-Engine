@@ -1,0 +1,1 @@
+#Class to hold the information for every document read.
