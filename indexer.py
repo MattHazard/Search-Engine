@@ -34,6 +34,5 @@ def traverseDirectories():
 def run():
     traverseDirectories()
     
-    
 if __name__== "__main__":
-  run()
+    run()
