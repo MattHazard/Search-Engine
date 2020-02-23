@@ -5,11 +5,14 @@ import os  # allows us to get the directories and file names
 import json
 import nltk
 from bs4.element import Comment
+from collections import OrderedDict
 
 nltk.download('stopwords')
 nltk.download('punkt')
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
+
+od = OrderedDict()
 
 
 def tag_visible(element):
@@ -18,6 +21,7 @@ def tag_visible(element):
     if isinstance(element, Comment):
         return False
     return True
+
 
 # source: https://stackoverflow.com/questions/1936466/beautifulsoup-grab-visible-webpage-text
 def text_from_html(soup1):
@@ -30,11 +34,11 @@ def text_from_html(soup1):
 # open idle and do 'import nltk' then 'nltk.download('punkt')
 def extractHtmlFromJson(filePath):
     json_data = open(filePath)
-    print('Loading data from: ' + filePath)
+    # print('Loading data from: ' + filePath)
     # { url, content, encoding }
     data = json.load(json_data)
     # load the html into BeautifulSoup
-    soup = BeautifulSoup(data['content'])
+    soup = BeautifulSoup(data['content'], features='lxml')
 
     # strip out the javscript and some style tags from the html file
     for garbage in soup(['script', 'style']):
@@ -42,9 +46,13 @@ def extractHtmlFromJson(filePath):
 
     tokenizer = RegexpTokenizer(r'\w+')
     tokens = tokenizer.tokenize(text_from_html(soup))
-    tokens = [token.lower() for token in tokens]
+    for word in tokens:
+        if word.lower() in od:
+            od[word.lower()] += 1
+        else:
+            od[word.lower()] = 1
 
-    print(tokens)
+    print(od)
 
 
 # runs through all directories and prints out a list of files within them.
