@@ -4,10 +4,11 @@ from bs4 import BeautifulSoup
 import os  # allows us to get the directories and file names
 import json
 import nltk
+from nltk.tokenize import word_tokenize
+
 
 #if this line is causing errors but you have nltk installed
 #open idle and do 'import nltk' then 'nltk.download('punkt')
-from nltk.tokenize import word_tokenize
 def extractHtmlFromJson(filePath):
     json_data = open(filePath)
     #print('Loading data from: ' + filePath)
@@ -35,5 +36,7 @@ def traverseDirectories():
 
 def run():
     traverseDirectories()
-
-run()
+    
+    
+if __name__== "__main__":
+  run()
