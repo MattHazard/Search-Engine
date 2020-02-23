@@ -42,6 +42,7 @@ def extractHtmlFromJson(filePath):
 
     tokenizer = RegexpTokenizer(r'\w+')
     tokens = tokenizer.tokenize(text_from_html(soup))
+    tokens = [token.lower() for token in tokens]
 
     print(tokens)
 
