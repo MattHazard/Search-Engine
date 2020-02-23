@@ -11,22 +11,19 @@ from nltk.tokenize import word_tokenize
 #open idle and do 'import nltk' then 'nltk.download('punkt')
 def extractHtmlFromJson(filePath):
     json_data = open(filePath)
-    #print('Loading data from: ' + filePath)
-    try:
-        # { url, content, encoding }
-        data = json.load(json_data)
-        #load the html into BeautifulSoup
-        soup = BeautifulSoup(data['content'])
+    print('Loading data from: ' + filePath)
+    # { url, content, encoding }
+    data = json.load(json_data)
+    #load the html into BeautifulSoup
+    soup = BeautifulSoup(data['content'])
 
-        #strip out the javscript and some style tags from the html file
-        for garbage in soup(['script', 'style']):
-            garbage.decompose()
-        text = soup.get_text() 
-        listOfTokens = word_tokenize(text)
+    #strip out the javscript and some style tags from the html file
+    for garbage in soup(['script', 'style']):
+        garbage.decompose()
+    text = soup.get_text() 
+    listOfTokens = word_tokenize(text)
 
-        print(listOfTokens)
-    except ValueError as e:
-        return
+    print(listOfTokens)
 
 # runs through all directories and prints out a list of files within them.
 def traverseDirectories():
