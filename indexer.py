@@ -74,7 +74,10 @@ def extractHtmlFromJson(filePath):
     tokens = tokenizer.tokenize(text_from_html(soup))
     for word in tokens:
         if word.lower() in words:
-            words[word.lower()]['postings'][currentDocId]['count'] += 1
+            if words[word.lower()]['postings'][currentDocId]:
+                words[word.lower()]['postings'][currentDocId]['count'] += 1
+            else:
+                pass
             words[word.lower()]['count'] += 1
         else:
             newPosting = posting.Posting(currentDocId, 0, 1)
@@ -83,7 +86,7 @@ def extractHtmlFromJson(filePath):
             words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
             words[word.lower()]['count'] = 1
 
-    #print(words)
+    print(words)
 
 
 # runs through all directories and prints out a list of files within them.
@@ -97,8 +100,8 @@ def traverseDirectories():
             currentDocId += 1
 
 def run():
-    #traverseDirectories()
-    extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
+    traverseDirectories()
+    #extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
 
 
 if __name__ == "__main__":
