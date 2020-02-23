@@ -12,7 +12,7 @@ nltk.download('punkt')
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 
-od = OrderedDict()
+words = {}
 
 
 def tag_visible(element):
@@ -47,12 +47,12 @@ def extractHtmlFromJson(filePath):
     tokenizer = RegexpTokenizer(r'\w+')
     tokens = tokenizer.tokenize(text_from_html(soup))
     for word in tokens:
-        if word.lower() in od:
-            od[word.lower()] += 1
+        if word.lower() in words:
+            words[word.lower()] += 1
         else:
-            od[word.lower()] = 1
+            words[word.lower()] = 1
 
-    print(od)
+    print(words)
 
 
 # runs through all directories and prints out a list of files within them.
