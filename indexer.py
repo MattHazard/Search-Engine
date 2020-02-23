@@ -13,6 +13,9 @@ from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 
 words = {}
+currentDocId = 0
+currentFileNum = 0
+currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
 
 
 def tag_visible(element):
@@ -33,10 +36,23 @@ def text_from_html(soup1):
 # if this line is causing errors but you have nltk installed
 # open idle and do 'import nltk' then 'nltk.download('punkt')
 def extractHtmlFromJson(filePath):
+    global currentDocId
+    global currentIndexFile
+    global currentFileNum
+    if currentDocId % 500 == 0:
+        #Close the current file
+        currentIndexFile.close()
+        #Open a new file
+        currentFileNum += 1
+        currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
+        print('Opened a new file: ' + str(currentFileNum) + '.txt')
+
     json_data = open(filePath)
     # print('Loading data from: ' + filePath)
     # { url, content, encoding }
+    print(filePath)
     data = json.load(json_data)
+    currentIndexFile.write(str(currentDocId) + ',' + str(data['url']) + '\n')
     # load the html into BeautifulSoup
     soup = BeautifulSoup(data['content'], features='lxml')
 
@@ -57,10 +73,13 @@ def extractHtmlFromJson(filePath):
 
 # runs through all directories and prints out a list of files within them.
 def traverseDirectories():
+    global currentDocId
     for (root, dirs, files) in os.walk('./DEV', topdown=True):
         for file in files:
+            if dirs == 'DocIdMap':
+                continue
             extractHtmlFromJson(root + '/' + file)
-
+            currentDocId += 1
 
 def run():
     traverseDirectories()
