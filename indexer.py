@@ -55,7 +55,6 @@ def extractHtmlFromJson(filePath):
         #Open a new file
         currentFileNum += 1
         currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
-        print('Opened a new file: ' + str(currentFileNum) + '.txt')
 
     json_data = open(filePath)
     # print('Loading data from: ' + filePath)
@@ -74,7 +73,7 @@ def extractHtmlFromJson(filePath):
     tokens = tokenizer.tokenize(text_from_html(soup))
     for word in tokens:
         if word.lower() in words:
-            if words[word.lower()]['postings'][currentDocId]:
+            if words[word.lower()]['postings'].get(currentDocId):
                 words[word.lower()]['postings'][currentDocId]['count'] += 1
                 words[word.lower()]['count'] += 1
             else:
@@ -90,7 +89,7 @@ def extractHtmlFromJson(filePath):
             words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
             words[word.lower()]['count'] = 1
 
-    print(words)
+    #print(words)
 
 
 # runs through all directories and prints out a list of files within them.
