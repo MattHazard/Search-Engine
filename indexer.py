@@ -17,7 +17,7 @@ currentDocId = 0
 currentFileNum = 0
 currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
 
-
+#comment
 def tag_visible(element):
     if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
         return False
