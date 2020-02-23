@@ -5,17 +5,21 @@ import os  # allows us to get the directories and file names
 import json
 import nltk
 from bs4.element import Comment
-from collections import OrderedDict
-
+from collections import defaultdict
 nltk.download('stopwords')
 nltk.download('punkt')
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 
-words = {}
 currentDocId = 0
 currentFileNum = 0
 currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
+
+#https://stackoverflow.com/questions/22036975/storing-dictionary-as-value-on-another-dictionary-in-python
+def multi_level_dict():
+    return defaultdict(multi_level_dict)
+
+words = {}
 
 #comment
 def tag_visible(element):
@@ -64,9 +68,14 @@ def extractHtmlFromJson(filePath):
     tokens = tokenizer.tokenize(text_from_html(soup))
     for word in tokens:
         if word.lower() in words:
-            words[word.lower()] += 1
+            words[word.lower()]['postings'][currentDocId]['count'] += 1
+            words[word.lower()]['count'] += 1
         else:
-            words[word.lower()] = 1
+            newPosting = posting.Posting(currentDocId, 0, 1)
+            words[word.lower()] = {}
+            words[word.lower()]['postings'] = {}
+            words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
+            words[word.lower()]['count'] = 1
 
     print(words)
 
@@ -82,7 +91,8 @@ def traverseDirectories():
             currentDocId += 1
 
 def run():
-    traverseDirectories()
+    #traverseDirectories()
+    extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
 
 
 if __name__ == "__main__":
