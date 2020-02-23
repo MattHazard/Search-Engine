@@ -1,7 +1,10 @@
 import posting as posting
 import bs4 as bs
+from bs4 import BeautifulSoup
 import os  # allows us to get the directories and file names
 import json
+
+
 
 def extractHtmlFromJson(filePath):
     json_data = open(filePath)
@@ -11,8 +14,14 @@ def extractHtmlFromJson(filePath):
         data = json.load(json_data)
         #print(data['url'])
         #print(data['encoding'])
-        print(data['content']) # <-- Tokenize this
-         
+        #print(data['content']) # <-- Tokenize this
+        soup = BeautifulSoup(data['content'])
+        for garbage in soup(['script', 'style']):
+            garbage.decompose()
+        
+        text = soup.get_text()
+        
+        print(text)
     except ValueError as e:
         return
 
