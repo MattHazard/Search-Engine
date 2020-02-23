@@ -15,7 +15,11 @@ from nltk.tokenize import RegexpTokenizer
 words = {}
 currentDocId = 0
 currentFileNum = 0
-currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
+if os.path.isdir('./DocIdMap'):
+    currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
+else:
+    os.mkdir(os.getcwd() + '/' + 'DocIdMap')
+    currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
 
 #comment
 def tag_visible(element):
@@ -39,6 +43,8 @@ def extractHtmlFromJson(filePath):
     global currentDocId
     global currentIndexFile
     global currentFileNum
+    
+
     if currentDocId % 500 == 0:
         #Close the current file
         currentIndexFile.close()
@@ -68,7 +74,7 @@ def extractHtmlFromJson(filePath):
         else:
             words[word.lower()] = 1
 
-    print(words)
+    #print(words)
 
 
 # runs through all directories and prints out a list of files within them.
