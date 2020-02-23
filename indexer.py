@@ -59,7 +59,7 @@ def extractHtmlFromJson(filePath):
     json_data = open(filePath)
     # print('Loading data from: ' + filePath)
     # { url, content, encoding }
-    print(filePath)
+    #print(filePath)
     data = json.load(json_data)
     currentIndexFile.write(str(currentDocId) + ',' + str(data['url']) + '\n')
     # load the html into BeautifulSoup
@@ -75,13 +75,12 @@ def extractHtmlFromJson(filePath):
         if word.lower() in words:
             if currentDocId in words[word.lower()]['postings']:
                 words[word.lower()]['postings'][currentDocId]['count'] += 1
-                words[word.lower()]['count'] += 1
             else:
                 newPosting = posting.Posting(currentDocId, 0, 1)
                 #words[word.lower()] = {}
                 #words[word.lower()]['postings'] = {}
                 words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
-                words[word.lower()]['count'] += 1
+            words[word.lower()]['count'] += 1
         else:
             newPosting = posting.Posting(currentDocId, 0, 1)
             words[word.lower()] = {}
