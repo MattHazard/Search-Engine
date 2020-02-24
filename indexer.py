@@ -9,23 +9,15 @@ nltk.download('stopwords')
 nltk.download('punkt')
 from nltk.tokenize import RegexpTokenizer
 
-
 currentDocId = 0
 currentFileNum = 0
+words = {}
+
 if os.path.isdir('./DocIdMap'):
     currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
 else:
     os.mkdir(os.getcwd() + '/' + 'DocIdMap')
     currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
-
-
-# https://stackoverflow.com/questions/22036975/storing-dictionary-as-value-on-another-dictionary-in-python
-def multi_level_dict():
-    return defaultdict(multi_level_dict)
-
-
-words = {}
-
 
 # comment
 def tag_visible(element):
@@ -115,7 +107,8 @@ def run():
     # extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
     # extractHtmlFromJson('DEV/chenli_ics_uci_edu/7ed296f06e2b7cfe46dcbbf81e75aacc93144bcd79e7d8201be8fe8bd376fdb6.json')
     # extractHtmlFromJson('DEV/chenli_ics_uci_edu/b800d3dc96be1cd9836ce799dc4e86db7ea1dfa27597ce9fd8ca186af928d583.json')
-    pickle.dump(words, open("index.p", "wb"))
+    with open('index.pickle', 'wb') as handle:
+        pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     #print(words)
     print(currentDocId)
     print(len(words.keys()))
