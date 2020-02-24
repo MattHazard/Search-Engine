@@ -5,13 +5,15 @@ import json
 import pickle
 from bs4.element import Comment
 import nltk
-nltk.download('stopwords')
 nltk.download('punkt')
+from nltk.stem import PorterStemmer
 from nltk.tokenize import RegexpTokenizer
+from nltk.tokenize import TweetTokenizer
 
-currentDocId = 0
+currentDocId = 1
 currentFileNum = 0
 words = {}
+stemmer = PorterStemmer()
 
 if os.path.isdir('./DocIdMap'):
     currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
@@ -57,14 +59,21 @@ def extractHtmlFromJson(filePath):
     currentIndexFile.write(str(currentDocId) + ',' + str(data['url']) + '\n')
     # load the html into BeautifulSoup
     soup = BeautifulSoup(data['content'], features='lxml')
+    text = soup.get_text()
 
     # strip out the javscript and some style tags from the html file
-    for garbage in soup(['script', 'style']):
-        garbage.decompose()
+    #for garbage in soup(['script', 'style']):
+        #garbage.decompose()
 
-    tokenizer = RegexpTokenizer(r'\w+')
-    tokens = tokenizer.tokenize(text_from_html(soup))
+    #tokenizer = RegexpTokenizer(r'\w+')
+    tokenizer = TweetTokenizer()
+    tokens = tokenizer.tokenize(text)
+
+    stemmedTokens = []
     for word in tokens:
+        stemmedTokens.append(stemmer.stem(word))
+
+    for word in stemmedTokens:
         badchar = 0
         for c in word.lower():
             if not c.isalnum() or not c.isascii():
@@ -101,19 +110,19 @@ def traverseDirectories():
 
 
 def run():
-    # extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
-    # extractHtmlFromJson('DEV/chenli_ics_uci_edu/7ed296f06e2b7cfe46dcbbf81e75aacc93144bcd79e7d8201be8fe8bd376fdb6.json')
-    # extractHtmlFromJson('DEV/chenli_ics_uci_edu/b800d3dc96be1cd9836ce799dc4e86db7ea1dfa27597ce9fd8ca186af928d583.json')
+    #extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
+    #extractHtmlFromJson('DEV/chenli_ics_uci_edu/7ed296f06e2b7cfe46dcbbf81e75aacc93144bcd79e7d8201be8fe8bd376fdb6.json')
+    #extractHtmlFromJson('DEV/chenli_ics_uci_edu/b800d3dc96be1cd9836ce799dc4e86db7ea1dfa27597ce9fd8ca186af928d583.json')
 
     traverseDirectories()
 
     ###Generates file that is easily readable with pickle
     with open('index.pickle', 'wb') as handle:
-        pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+      pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     #print(words)
-    #print(currentDocId)
-    #print(len(words.keys()))
+    print(currentDocId)
+    print(len(words.keys()))
 
     ###Loads file after it has been generated.
     #with open('index.pickle', 'rb') as handle:
