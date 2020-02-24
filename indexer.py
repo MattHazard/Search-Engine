@@ -4,13 +4,14 @@ from bs4 import BeautifulSoup
 import os  # allows us to get the directories and file names
 import json
 import nltk
-import pickle
 from bs4.element import Comment
 from collections import defaultdict
+
 nltk.download('stopwords')
 nltk.download('punkt')
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
+import lxml
 
 currentDocId = 0
 currentFileNum = 0
@@ -20,13 +21,16 @@ else:
     os.mkdir(os.getcwd() + '/' + 'DocIdMap')
     currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
 
-#https://stackoverflow.com/questions/22036975/storing-dictionary-as-value-on-another-dictionary-in-python
+
+# https://stackoverflow.com/questions/22036975/storing-dictionary-as-value-on-another-dictionary-in-python
 def multi_level_dict():
     return defaultdict(multi_level_dict)
 
+
 words = {}
 
-#comment
+
+# comment
 def tag_visible(element):
     if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
         return False
@@ -48,19 +52,18 @@ def extractHtmlFromJson(filePath):
     global currentDocId
     global currentIndexFile
     global currentFileNum
-    
 
     if currentDocId % 500 == 0:
-        #Close the current file
+        # Close the current file
         currentIndexFile.close()
-        #Open a new file
+        # Open a new file
         currentFileNum += 1
         currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
 
     json_data = open(filePath)
     # print('Loading data from: ' + filePath)
     # { url, content, encoding }
-    #print(filePath)
+    # print(filePath)
     data = json.load(json_data)
     currentIndexFile.write(str(currentDocId) + ',' + str(data['url']) + '\n')
     # load the html into BeautifulSoup
@@ -73,11 +76,20 @@ def extractHtmlFromJson(filePath):
     tokenizer = RegexpTokenizer(r'\w+')
     tokens = tokenizer.tokenize(text_from_html(soup))
     for word in tokens:
+        badchar = 0
+        for c in word.lower():
+            if not c.isalnum() or not c.isascii():
+                badchar = 1
+                break
+        if badchar == 1:
+            continue
         if word.lower() in words:
             if currentDocId in words[word.lower()]['postings']:
                 words[word.lower()]['postings'][currentDocId]['count'] += 1
             else:
                 newPosting = posting.Posting(currentDocId, 0, 1)
+                # words[word.lower()] = {}
+                # words[word.lower()]['postings'] = {}
                 words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
             words[word.lower()]['count'] += 1
         else:
@@ -87,7 +99,7 @@ def extractHtmlFromJson(filePath):
             words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
             words[word.lower()]['count'] = 1
 
-    #print(words)
+    # print(words)
 
 
 # runs through all directories and prints out a list of files within them.
@@ -100,15 +112,17 @@ def traverseDirectories():
             extractHtmlFromJson(root + '/' + file)
             currentDocId += 1
 
+
 def run():
     traverseDirectories()
-    #extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
-    #extractHtmlFromJson('DEV/chenli_ics_uci_edu/7ed296f06e2b7cfe46dcbbf81e75aacc93144bcd79e7d8201be8fe8bd376fdb6.json')
-    #extractHtmlFromJson('DEV/chenli_ics_uci_edu/b800d3dc96be1cd9836ce799dc4e86db7ea1dfa27597ce9fd8ca186af928d583.json')
-    pickle.dump(words, open("index.p", "wb"))
-    #print(words)
+    global currentDocId
+    # extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
+    # extractHtmlFromJson('DEV/chenli_ics_uci_edu/7ed296f06e2b7cfe46dcbbf81e75aacc93144bcd79e7d8201be8fe8bd376fdb6.json')
+    # extractHtmlFromJson('DEV/chenli_ics_uci_edu/b800d3dc96be1cd9836ce799dc4e86db7ea1dfa27597ce9fd8ca186af928d583.json')
+    print(words)
     print(currentDocId)
     print(len(words.keys()))
+
 
 if __name__ == "__main__":
     run()
