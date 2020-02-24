@@ -77,8 +77,6 @@ def extractHtmlFromJson(filePath):
                 words[word.lower()]['postings'][currentDocId]['count'] += 1
             else:
                 newPosting = posting.Posting(currentDocId, 0, 1)
-                # words[word.lower()] = {}
-                # words[word.lower()]['postings'] = {}
                 words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
             words[word.lower()]['count'] += 1
         else:
