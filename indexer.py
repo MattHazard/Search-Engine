@@ -103,15 +103,24 @@ def traverseDirectories():
 
 
 def run():
-    traverseDirectories()
     # extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
     # extractHtmlFromJson('DEV/chenli_ics_uci_edu/7ed296f06e2b7cfe46dcbbf81e75aacc93144bcd79e7d8201be8fe8bd376fdb6.json')
     # extractHtmlFromJson('DEV/chenli_ics_uci_edu/b800d3dc96be1cd9836ce799dc4e86db7ea1dfa27597ce9fd8ca186af928d583.json')
+
+    traverseDirectories()
+
+    ###Generates file that is easily readable with pickle
     with open('index.pickle', 'wb') as handle:
         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
     #print(words)
-    print(currentDocId)
-    print(len(words.keys()))
+    #print(currentDocId)
+    #print(len(words.keys()))
+
+    ###Loads file after it has been generated.
+    #with open('index.pickle', 'rb') as handle:
+        #loadedwords = pickle.load(handle)
+    #print(loadedwords)
 
 
 if __name__ == "__main__":
