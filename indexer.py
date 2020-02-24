@@ -1,17 +1,14 @@
 import posting as posting
-import bs4 as bs
 from bs4 import BeautifulSoup
 import os  # allows us to get the directories and file names
 import json
-import nltk
+import pickle
 from bs4.element import Comment
-from collections import defaultdict
-
+import nltk
 nltk.download('stopwords')
 nltk.download('punkt')
-from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
-import lxml
+
 
 currentDocId = 0
 currentFileNum = 0
@@ -115,11 +112,11 @@ def traverseDirectories():
 
 def run():
     traverseDirectories()
-    global currentDocId
     # extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
     # extractHtmlFromJson('DEV/chenli_ics_uci_edu/7ed296f06e2b7cfe46dcbbf81e75aacc93144bcd79e7d8201be8fe8bd376fdb6.json')
     # extractHtmlFromJson('DEV/chenli_ics_uci_edu/b800d3dc96be1cd9836ce799dc4e86db7ea1dfa27597ce9fd8ca186af928d583.json')
-    print(words)
+    pickle.dump(words, open("index.p", "wb"))
+    #print(words)
     print(currentDocId)
     print(len(words.keys()))
 
