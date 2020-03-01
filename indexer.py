@@ -10,11 +10,13 @@ nltk.download('punkt')
 from nltk.stem import PorterStemmer
 from nltk.tokenize import RegexpTokenizer
 from nltk.tokenize import TweetTokenizer
+from math import log10
 
 currentDocId = 1
 currentFileNum = 0
 words = {}
 stemmer = PorterStemmer()
+count_in_doc = {}
 
 if os.path.isdir('./DocIdMap'):
     currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
@@ -73,6 +75,13 @@ def updateDocIdMap(url):
     currentIndexFile.write(url + '\n')
 
 ###################################################
+# Calculates the tf-idf score.
+###################################################
+def getTfIdf(tf, N, df):
+    idf = log10(N/(df+1))
+    return tf * idf
+
+###################################################
 # Takes a list of tokens and updates the posting
 # dictionary.
 ###################################################
@@ -94,19 +103,29 @@ def processTokens(tokens):
         if word.lower() in words:
             if currentDocId in words[word.lower()]['postings']:
                 words[word.lower()]['postings'][currentDocId]['count'] += 1
+                #############################
+                # I think tf needs to be calculated while postings are being created
+                # but we can calculate the full tf-idf when we get a query?
+                # Once we have everything indexed we will have the df (words[word.lower()]['count']) and the N (size of corpus)
+                # When we get a query we can just get the tf-idf while we are searching for the words?
+                ############################
+                #update tf
+                words[word.lower()]['postings'][currentDocId]['tf'] = words[word.lower()]['postings'][currentDocId]['count'] / len(stemmedTokens)
             else:
                 newPosting = posting.Posting(currentDocId, 0, 1)
                 words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
-                #print("New posting inserted: " + word.lower() + " - " + str(newPosting))
+                #set up the tf
+                words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
             words[word.lower()]['count'] += 1
         else:
             newPosting = posting.Posting(currentDocId, 0, 1)
-            print("New posting inserted: " + word.lower() + " - " + str(newPosting))
             words[word.lower()] = {}
             words[word.lower()]['postings'] = {}
             words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
             words[word.lower()]['count'] = 1
 
+            # set up the tf
+            words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
 
 ###################################################
 # Extracts all the words from an html file and
