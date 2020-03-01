@@ -104,11 +104,11 @@ def processTokens(tokens):
             if currentDocId in words[word.lower()]['postings']:
                 words[word.lower()]['postings'][currentDocId]['count'] += 1
                 #############################
-                # I think tf needs to be calculated while postings are being created
-                # but we can calculate the full tf-idf when we get a query?
-                # Once we have everything indexed we will have the df (words[word.lower()]['count']) and the N (size of corpus)
-                # When we get a query we can just get the tf-idf while we are searching for the words?
-                ############################
+                ## I think tf needs to be calculated while postings are being created
+                ## but we can calculate the full tf-idf when we get a query?
+                ## Once we have everything indexed we will have the df (words[word.lower()]['count']) and the N (size of corpus)
+                ## When we get a query we can just get the tf-idf while we are searching for the words?
+                #############################
                 #update tf
                 words[word.lower()]['postings'][currentDocId]['tf'] = words[word.lower()]['postings'][currentDocId]['count'] / len(stemmedTokens)
             else:
@@ -149,17 +149,31 @@ def extractTokensFromJson(filePath):
 # runs through all directories and prints out a 
 # list of files within them.
 ###################################################
+def dumpPickle():
+    # We want to split up the files a,b,..z, numeric
+    for word in words:
+        if word[0].isalpha() == True:
+            print("Posting for word: " + word + " is " + str(words[word.lower()]['postings']))
+        else:
+            print("Not alpha? : " + word[0])
+
+###################################################
+# runs through all directories and prints out a 
+# list of files within them.
+###################################################
 def traverseDirectories():
     global currentDocId
     for (root, dirs, files) in os.walk('./DEV', topdown=True):
         for file in files:
             extractTokensFromJson(root + '/' + file)
             currentDocId += 1
+            dumpPickle()
 
 ###################################################
 # Runs the indexer.
 ###################################################
 def run():
+    print(getTfIdf(.03, 10000000, 1000))
     traverseDirectories()
 
     ###Generates file that is easily readable with pickle
