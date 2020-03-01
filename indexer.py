@@ -36,36 +36,45 @@ def text_from_html(soup1):
     visible_texts = filter(tag_visible, texts)
     return u" ".join(t.strip() for t in visible_texts)
 
+# returns the url associated with the document id given
+def getUrlFromDocId(docId):
+    try:
+        fileNumber = docId // 500
+        startId = fileNumber * 500
+        urlLine = docId - startId
+        if fileNumber == 0:
+            urlLine -= 1
+        file = open('./DocIdMap/' + str(fileNumber) + '.txt', 'r')
+        for x in range(urlLine):
+            file.readline()
+        return file.readline()
+    except:
+        print("Error occured while trying to get URL from DocId!")
+        return ''
 
-# if this line is causing errors but you have nltk installed
-# open idle and do 'import nltk' then 'nltk.download('punkt')
-def extractHtmlFromJson(filePath):
+def updateDocIdMap(url):
     global currentDocId
     global currentIndexFile
     global currentFileNum
-
     if currentDocId % 500 == 0:
         # Close the current file
         currentIndexFile.close()
         # Open a new file
         currentFileNum += 1
         currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
+    currentIndexFile.write(url + '\n')
+
+# if this line is causing errors but you have nltk installed
+# open idle and do 'import nltk' then 'nltk.download('punkt')
+def extractHtmlFromJson(filePath):
+    global currentDocId
 
     json_data = open(filePath)
-    # print('Loading data from: ' + filePath)
-    # { url, content, encoding }
-    # print(filePath)
     data = json.load(json_data)
-    currentIndexFile.write(str(currentDocId) + ',' + str(data['url']) + '\n')
-    # load the html into BeautifulSoup
+    updateDocIdMap(str(data['url'])) 
     soup = BeautifulSoup(data['content'], features='lxml')
     text = soup.get_text()
-
-    # strip out the javscript and some style tags from the html file
-    #for garbage in soup(['script', 'style']):
-        #garbage.decompose()
-
-    #tokenizer = RegexpTokenizer(r'\w+')
+    
     tokenizer = TweetTokenizer()
     tokens = tokenizer.tokenize(text)
 
@@ -95,16 +104,12 @@ def extractHtmlFromJson(filePath):
             words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
             words[word.lower()]['count'] = 1
 
-    # print(words)
-
 
 # runs through all directories and prints out a list of files within them.
 def traverseDirectories():
     global currentDocId
     for (root, dirs, files) in os.walk('./DEV', topdown=True):
         for file in files:
-            if dirs == 'DocIdMap':
-                continue
             extractHtmlFromJson(root + '/' + file)
             currentDocId += 1
 
@@ -113,7 +118,7 @@ def run():
     #extractHtmlFromJson('DEV/aiclub_ics_uci_edu/8ef6d99d9f9264fc84514cdd2e680d35843785310331e1db4bbd06dd2b8eda9b.json')
     #extractHtmlFromJson('DEV/chenli_ics_uci_edu/7ed296f06e2b7cfe46dcbbf81e75aacc93144bcd79e7d8201be8fe8bd376fdb6.json')
     #extractHtmlFromJson('DEV/chenli_ics_uci_edu/b800d3dc96be1cd9836ce799dc4e86db7ea1dfa27597ce9fd8ca186af928d583.json')
-
+    
     traverseDirectories()
 
     ###Generates file that is easily readable with pickle
@@ -121,8 +126,8 @@ def run():
       pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     #print(words)
-    print(currentDocId)
-    print(len(words.keys()))
+    #print(currentDocId)
+    #print(len(words.keys()))
 
     ###Loads file after it has been generated.
     #with open('index.pickle', 'rb') as handle:
