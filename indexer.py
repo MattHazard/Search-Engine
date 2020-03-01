@@ -50,7 +50,6 @@ def getUrlFromDocId(docId):
         return file.readline()
     except:
         print("Error occured while trying to get URL from DocId!")
-        return ''
 
 def updateDocIdMap(url):
     global currentDocId
@@ -75,6 +74,9 @@ def extractHtmlFromJson(filePath):
     soup = BeautifulSoup(data['content'], features='lxml')
     text = soup.get_text()
     
+    for garbage in soup(['script', 'style']):
+        garbage.decompose()
+
     tokenizer = TweetTokenizer()
     tokens = tokenizer.tokenize(text)
 
@@ -96,9 +98,11 @@ def extractHtmlFromJson(filePath):
             else:
                 newPosting = posting.Posting(currentDocId, 0, 1)
                 words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
+                print("New posting inserted: " + word.lower() + " - " + str(newPosting))
             words[word.lower()]['count'] += 1
         else:
             newPosting = posting.Posting(currentDocId, 0, 1)
+            print("New posting inserted: " + word.lower() + " - " + str(newPosting))
             words[word.lower()] = {}
             words[word.lower()]['postings'] = {}
             words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
