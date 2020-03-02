@@ -179,6 +179,8 @@ def extractTokensFromJson(filePath):
     
     processTokens(tokens)
 
+    currentDocId += 1
+
 ###################################################
 # Need to get this part finished ASAP so we can
 # start using our index. Having trouble using
@@ -203,7 +205,6 @@ def traverseDirectories():
     for (root, dirs, files) in os.walk('./DEV', topdown=True):
         for file in files:
             extractTokensFromJson(root + '/' + file)
-            currentDocId += 1
 
 ###################################################
 # Runs the indexer.
@@ -211,7 +212,9 @@ def traverseDirectories():
 def run():
     # print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
     # traverseDirectories()
-    #extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
+    # extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
+    # extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
+    # extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
 
     ###Loads file after it has been generated.
     loadall('indexes/s.pickle')
