@@ -24,6 +24,20 @@ else:
     os.mkdir(os.getcwd() + '/' + 'DocIdMap')
     currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
 
+###################################################
+# loads all pickle dicts in a file to be loaded to
+# a single dictionary.
+#Ex: dict = loadall(a.txt)
+###################################################
+def loadall(filename):
+    global words
+    with open(filename, 'rb') as fr:
+        try:
+            while True:
+                words = pickle.load(fr)
+        except EOFError:
+            pass
+
 # comment
 def tag_visible(element):
     if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
@@ -87,6 +101,7 @@ def getTfIdf(tf, N, df):
 ###################################################
 def processTokens(tokens):
     global currentDocId
+    global words
 
     stemmedTokens = []
     for word in tokens:
@@ -100,6 +115,16 @@ def processTokens(tokens):
                 break
         if badchar == 1:
             continue
+
+        words = {}
+
+        if os.path.isfile('./indexes/numsym.pickle') and not word[0].isalpha():
+                loadall('./indexes/numsym.pickle')
+
+        elif os.path.isfile('./indexes/' + str(word[0]) + '.pickle'):
+            loadall('./indexes/' + str(word[0]) + '.pickle')
+
+
         if word.lower() in words:
             if currentDocId in words[word.lower()]['postings']:
                 words[word.lower()]['postings'][currentDocId]['count'] += 1
@@ -126,7 +151,13 @@ def processTokens(tokens):
 
             # set up the tf
             words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
-        
+        if not word[0].isalpha() :
+            with open('./indexes/numsym.pickle', 'ab') as handle:
+                pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        else:
+            with open('./indexes/' + str(word[0]) + '.pickle', 'ab') as handle:
+                pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        words = {}
 #        if word.lower() == "invertedindexsegmentfortest":
 #            print("Found the URL about indexers! : " + str(getUrlFromDocId(currentDocId)))
 
@@ -140,7 +171,7 @@ def extractTokensFromJson(filePath):
     json_data = open(filePath)
     data = json.load(json_data)
     updateDocIdMap(str(data['url'])) 
-    soup = BeautifulSoup(data['content'], 'html5lib')#features='lxml')
+    soup = BeautifulSoup(data['content'], features='lxml')
     text = soup.get_text(" ", strip=True)
     
     tokenizer = TweetTokenizer()
@@ -149,18 +180,18 @@ def extractTokensFromJson(filePath):
     processTokens(tokens)
 
 ###################################################
-# Need to get this part finished ASAP so we can  
+# Need to get this part finished ASAP so we can
 # start using our index. Having trouble using
 # this dict of dicts.
 ###################################################
-def writeIndex():
-    #We want to split up the files a,b,..z, numeric
-    for word in words:
-        if word[0].isalpha() == True:
-            #print("Posting for word: " + word + " is " + str(words[word.lower()]['postings']))
-            print(word + " df = " + str(words[word.lower()]['count']))
-        else:
-            print("Not alpha? : " + word[0])
+# def writeIndex():
+#     #We want to split up the files a,b,..z, numeric
+#     for word in words:
+#         if word[0].isalpha() == True:
+#             #print("Posting for word: " + word + " is " + str(words[word.lower()]['postings']))
+#             print(word + " df = " + str(words[word.lower()]['count']))
+#         else:
+#             print("Not alpha? : " + word[0])
 
 
 ###################################################
@@ -173,25 +204,18 @@ def traverseDirectories():
         for file in files:
             extractTokensFromJson(root + '/' + file)
             currentDocId += 1
-            
-            if currentDocId % 10 == 0:
-                writeIndex()
 
 ###################################################
 # Runs the indexer.
 ###################################################
 def run():
-    print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
-    traverseDirectories()
-
-    ###Generates file that is easily readable with pickle
-    with open('index.pickle', 'wb') as handle:
-      pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
+    # traverseDirectories()
+    #extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
 
     ###Loads file after it has been generated.
-    #with open('index.pickle', 'rb') as handle:
-        #loadedwords = pickle.load(handle)
-    #print(loadedwords)
+    # loadall('indexes/n.pickle')
+    # print(words)
 
 
 if __name__ == "__main__":
