@@ -19,7 +19,7 @@ stemmer = PorterStemmer()
 count_in_doc = {}
 
 if os.path.isdir('./DocIdMap'):
-    currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
+    currentIndexFile = open('./DocIdMap/' + str(currentFileNum), 'a')
 else:
     os.mkdir(os.getcwd() + '/' + 'DocIdMap')
     currentIndexFile = open('./DocIdMap/' + str(currentFileNum) + '.txt', 'a')
@@ -126,6 +126,9 @@ def processTokens(tokens):
 
             # set up the tf
             words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
+        
+#        if word.lower() == "invertedindexsegmentfortest":
+#            print("Found the URL about indexers! : " + str(getUrlFromDocId(currentDocId)))
 
 ###################################################
 # Extracts all the words from an html file and
@@ -146,16 +149,19 @@ def extractTokensFromJson(filePath):
     processTokens(tokens)
 
 ###################################################
-# runs through all directories and prints out a 
-# list of files within them.
+# Need to get this part finished ASAP so we can  
+# start using our index. Having trouble using
+# this dict of dicts.
 ###################################################
-def dumpPickle():
-    # We want to split up the files a,b,..z, numeric
+def writeIndex():
+    #We want to split up the files a,b,..z, numeric
     for word in words:
         if word[0].isalpha() == True:
-            print("Posting for word: " + word + " is " + str(words[word.lower()]['postings']))
+            #print("Posting for word: " + word + " is " + str(words[word.lower()]['postings']))
+            print(word + " df = " + str(words[word.lower()]['count']))
         else:
             print("Not alpha? : " + word[0])
+
 
 ###################################################
 # runs through all directories and prints out a 
@@ -167,13 +173,15 @@ def traverseDirectories():
         for file in files:
             extractTokensFromJson(root + '/' + file)
             currentDocId += 1
-            dumpPickle()
+            
+            if currentDocId % 10 == 0:
+                writeIndex()
 
 ###################################################
 # Runs the indexer.
 ###################################################
 def run():
-    print(getTfIdf(.03, 10000000, 1000))
+    print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
     traverseDirectories()
 
     ###Generates file that is easily readable with pickle
