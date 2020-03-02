@@ -214,8 +214,8 @@ def run():
     #extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
 
     ###Loads file after it has been generated.
-    # loadall('indexes/n.pickle')
-    # print(words)
+    loadall('indexes/s.pickle')
+    print(words)
 
 
 if __name__ == "__main__":
