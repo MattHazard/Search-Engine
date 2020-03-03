@@ -123,16 +123,16 @@ def processTokens(tokens):
             continue
 
         if words:
-            if list(words.keys())[0][0] == word[0]:
+            if list(words.keys())[0][0] == word.lower()[0]:
                 pass
             else:
                 words = {}
 
-        if os.path.isfile('./indexes/numsym.pickle') and not word[0].isalpha():
+        if os.path.isfile('./indexes/numsym.pickle') and not word.lower()[0].isalpha():
                 loadall('./indexes/numsym.pickle')
 
-        elif os.path.isfile('./indexes/' + str(word[0]) + '.pickle'):
-            loadall('./indexes/' + str(word[0]) + '.pickle')
+        elif os.path.isfile('./indexes/' + str(word.lower()[0]) + '.pickle'):
+            loadall('./indexes/' + str(word.lower()[0]) + '.pickle')
 
 
         if word.lower() in words:
@@ -161,11 +161,11 @@ def processTokens(tokens):
 
             # set up the tf
             words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
-        if not word[0].isalpha() :
+        if not word.lower()[0].isalpha():
             with open('./indexes/numsym.pickle', 'ab') as handle:
                 pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
         else:
-            with open('./indexes/' + str(word[0]) + '.pickle', 'ab') as handle:
+            with open('./indexes/' + str(word.lower()[0]) + '.pickle', 'ab') as handle:
                 pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
 #        if word.lower() == "invertedindexsegmentfortest":
 #            print("Found the URL about indexers! : " + str(getUrlFromDocId(currentDocId)))
@@ -221,13 +221,13 @@ def traverseDirectories():
 def run():
     # print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
     # traverseDirectories()
-    # extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
-    # extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
-    # extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
+    extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
+    extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
+    extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
 
     ###Loads file after it has been generated.
-    loadall('indexes/p.pickle')
-    print(words)
+    # loadall('indexes/p.pickle')
+    # print(words)
 
 
 if __name__ == "__main__":
