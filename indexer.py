@@ -37,12 +37,14 @@ else:
 
 def loadall(filename):
     global words
+
     with open(filename, 'rb') as fr:
         try:
             while True:
                 words = pickle.load(fr)
         except EOFError:
             pass
+
 
 # comment
 def tag_visible(element):
@@ -128,11 +130,12 @@ def processTokens(tokens):
             else:
                 words = {}
 
-        if os.path.isfile('./indexes/numsym.pickle') and not word.lower()[0].isalpha():
+        if not words:
+            if os.path.isfile('./indexes/numsym.pickle') and not word.lower()[0].isalpha():
                 loadall('./indexes/numsym.pickle')
 
-        elif os.path.isfile('./indexes/' + str(word.lower()[0]) + '.pickle'):
-            loadall('./indexes/' + str(word.lower()[0]) + '.pickle')
+            elif os.path.isfile('./indexes/' + str(word.lower()[0]) + '.pickle'):
+                loadall('./indexes/' + str(word.lower()[0]) + '.pickle')
 
 
         if word.lower() in words:
@@ -162,13 +165,11 @@ def processTokens(tokens):
             # set up the tf
             words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
         if not word.lower()[0].isalpha():
-            with open('./indexes/numsym.pickle', 'ab') as handle:
+            with open('./indexes/numsym.pickle', 'wb') as handle:
                 pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
         else:
-            with open('./indexes/' + str(word.lower()[0]) + '.pickle', 'ab') as handle:
+            with open('./indexes/' + str(word.lower()[0]) + '.pickle', 'wb') as handle:
                 pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-#        if word.lower() == "invertedindexsegmentfortest":
-#            print("Found the URL about indexers! : " + str(getUrlFromDocId(currentDocId)))
 
 ###################################################
 # Extracts all the words from an html file and
@@ -224,10 +225,11 @@ def run():
     extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
     extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
     extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
-
+    # with open('pickle.pickle', 'ab') as handle:
+    #     pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     ###Loads file after it has been generated.
-    # loadall('indexes/p.pickle')
-    # print(words)
+    # loadall('./indexes/f.pickle')
+    # print(len(words))
 
 
 if __name__ == "__main__":
