@@ -138,8 +138,6 @@ def processTokens(tokens):
     global tzDict
     global numsymDict
 
-    currPickleFile = 0
-
     stemmedTokens = []
     for word in tokens:
         stemmedTokens.append(stemmer.stem(word))
@@ -153,7 +151,7 @@ def processTokens(tokens):
         if badchar == 1:
             continue
 
-        if len(list(words.keys())) > 20000:
+        if len(list(words.keys())) > 50000:
             # if ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
             #     pass
             # if ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
@@ -166,8 +164,8 @@ def processTokens(tokens):
             #     pass
             with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
                 pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            words = {}
-            currPickleFile += 1
+                words = {}
+                currPickleFile += 1
 
         # if not words:
         #     if os.path.isfile('./indexes/numsym.pickle') and not word.lower()[0].isalpha():
