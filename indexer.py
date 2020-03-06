@@ -14,8 +14,13 @@ ag = (97, 103)
 ho = (104, 111)
 ps = (112, 115)
 tz = (116, 122)
+agDict = {}
+hoDict = {}
+psDict = {}
+tzDict = {}
+numsymDict = {}
 
-
+currPickleFile = 0
 currentDocId = 1
 currentFileNum = 0
 words = {}
@@ -34,12 +39,19 @@ else:
     os.mkdir(os.getcwd() + '/' + 'indexes')
 
 
+def createEntry(dict, word):
+    global currentDocId
+    newPosting = posting.Posting(currentDocId, 0, 1)
+    dict[word.lower()] = {}
+    dict[word.lower()]['postings'] = {}
+    dict[word.lower()]['postings'][currentDocId] = newPosting.__dict__
+    dict[word.lower()]['count'] = 1
+
 ###################################################
 # loads all pickle dicts in a file to be loaded to
 # a single dictionary.
 #Ex: dict = loadall(a.txt)
 ###################################################
-
 def loadall(filename):
     global words
 
@@ -119,6 +131,14 @@ def processTokens(tokens):
     global ho
     global ps
     global tz
+    global currPickleFile
+    global agDict
+    global hoDict
+    global psDict
+    global tzDict
+    global numsymDict
+
+    currPickleFile = 0
 
     stemmedTokens = []
     for word in tokens:
@@ -133,31 +153,33 @@ def processTokens(tokens):
         if badchar == 1:
             continue
 
-        if words:
-            if ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
-                pass
-            if ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
-                pass
-            if ps[0] <= ord(list(words.keys())[0][0]) <= ps[1] and ps[0] <= ord(word.lower()[0]) <= ps[1]:
-                pass
-            if tz[0] <= ord(list(words.keys())[0][0]) <= tz[1] and tz[0] <= ord(word.lower()[0]) <= tz[1]:
-                pass
-            elif not list(words.keys())[0][0].isalpha() and not word.lower()[0].isalpha():
-                pass
-            else:
-                words = {}
+        if len(list(words.keys())) > 20000:
+            # if ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
+            #     pass
+            # if ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
+            #     pass
+            # if ps[0] <= ord(list(words.keys())[0][0]) <= ps[1] and ps[0] <= ord(word.lower()[0]) <= ps[1]:
+            #     pass
+            # if tz[0] <= ord(list(words.keys())[0][0]) <= tz[1] and tz[0] <= ord(word.lower()[0]) <= tz[1]:
+            #     pass
+            # elif not list(words.keys())[0][0].isalpha() and not word.lower()[0].isalpha():
+            #     pass
+            with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
+                pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            words = {}
+            currPickleFile += 1
 
-        if not words:
-            if os.path.isfile('./indexes/numsym.pickle') and not word.lower()[0].isalpha():
-                loadall('./indexes/numsym.pickle')
-            elif ag[0] <= ord(word.lower()[0]) <= ag[1] and os.path.isfile('./indexes/ag.pickle'):
-                loadall('./indexes/ag.pickle')
-            elif ho[0] <= ord(word.lower()[0]) <= ho[1] and os.path.isfile('./indexes/ag.pickle'):
-                loadall('./indexes/ho.pickle')
-            elif ps[0] <= ord(word.lower()[0]) <= ps[1] and os.path.isfile('./indexes/ag.pickle'):
-                loadall('./indexes/ps.pickle')
-            elif tz[0] <= ord(word.lower()[0]) <= tz[1] and os.path.isfile('./indexes/ag.pickle'):
-                loadall('./indexes/tz.pickle')
+        # if not words:
+        #     if os.path.isfile('./indexes/numsym.pickle') and not word.lower()[0].isalpha():
+        #         loadall('./indexes/numsym.pickle')
+        #     elif ag[0] <= ord(word.lower()[0]) <= ag[1] and os.path.isfile('./indexes/ag.pickle'):
+        #         loadall('./indexes/ag.pickle')
+        #     elif ho[0] <= ord(word.lower()[0]) <= ho[1] and os.path.isfile('./indexes/ag.pickle'):
+        #         loadall('./indexes/ho.pickle')
+        #     elif ps[0] <= ord(word.lower()[0]) <= ps[1] and os.path.isfile('./indexes/ag.pickle'):
+        #         loadall('./indexes/ps.pickle')
+        #     elif tz[0] <= ord(word.lower()[0]) <= tz[1] and os.path.isfile('./indexes/ag.pickle'):
+        #         loadall('./indexes/tz.pickle')
 
         if word.lower() in words:
             if currentDocId in words[word.lower()]['postings']:
@@ -182,24 +204,25 @@ def processTokens(tokens):
             words[word.lower()]['postings'] = {}
             words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
             words[word.lower()]['count'] = 1
-
             # set up the tf
             words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
-        if not word.lower()[0].isalpha():
-            with open('./indexes/numsym.pickle', 'wb') as handle:
-                pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        elif ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
-            with open('./indexes/ag.pickle', 'wb') as handle:
-                pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        elif ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
-            with open('./indexes/ho.pickle', 'wb') as handle:
-                pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        elif ps[0] <= ord(list(words.keys())[0][0]) <= ps[1] and ps[0] <= ord(word.lower()[0]) <= ps[1]:
-            with open('./indexes/ps.pickle', 'wb') as handle:
-                pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        elif tz[0] <= ord(list(words.keys())[0][0]) <= tz[1] and tz[0] <= ord(word.lower()[0]) <= tz[1]:
-            with open('./indexes/tz.pickle', 'wb') as handle:
-                pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        # if not word.lower()[0].isalpha():
+        #     with open('./indexes/numsym.pickle', 'wb') as handle:
+        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # elif ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
+        #     with open('./indexes/ag.pickle', 'wb') as handle:
+        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # elif ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
+        #     with open('./indexes/ho.pickle', 'wb') as handle:
+        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # elif ps[0] <= ord(list(words.keys())[0][0]) <= ps[1] and ps[0] <= ord(word.lower()[0]) <= ps[1]:
+        #     with open('./indexes/ps.pickle', 'wb') as handle:
+        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        # elif tz[0] <= ord(list(words.keys())[0][0]) <= tz[1] and tz[0] <= ord(word.lower()[0]) <= tz[1]:
+        #     with open('./indexes/tz.pickle', 'wb') as handle:
+        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 ###################################################
 # Extracts all the words from an html file and
@@ -216,7 +239,7 @@ def extractTokensFromJson(filePath):
     
     tokenizer = TweetTokenizer()
     tokens = tokenizer.tokenize(text)
-    
+
     processTokens(tokens)
 
     currentDocId += 1
@@ -251,14 +274,17 @@ def traverseDirectories():
 ###################################################
 def run():
     # print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
-    #traverseDirectories()
-    extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
-    extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
-    extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
+    traverseDirectories()
+
+    # extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
+    # extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
+    # extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
+    with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
+        pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     # with open('pickle.pickle', 'ab') as handle:
     #     pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     ###Loads file after it has been generated.
-    # loadall('./indexes/ag.pickle')
+    # loadall('./indexes/0.pickle')
     # print(words)
 
 
