@@ -9,7 +9,7 @@ nltk.download('punkt')
 from nltk.stem import PorterStemmer
 from nltk.tokenize import TweetTokenizer
 from math import log10
-
+import sys
 ag = (97, 103)
 ho = (104, 111)
 ps = (112, 115)
@@ -151,7 +151,7 @@ def processTokens(tokens):
         if badchar == 1:
             continue
 
-        if len(list(words.keys())) > 50000:
+        if len(words.keys()) > 250000:
             # if ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
             #     pass
             # if ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
