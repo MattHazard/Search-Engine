@@ -151,7 +151,7 @@ def processTokens(tokens):
         if badchar == 1:
             continue
 
-        if len(words.keys()) > 250000:
+        if sys.getsizeof(words) > 10000000:
             # if ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
             #     pass
             # if ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
@@ -164,8 +164,8 @@ def processTokens(tokens):
             #     pass
             with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
                 pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-                words = {}
-                currPickleFile += 1
+            words = {}
+            currPickleFile += 1
 
         # if not words:
         #     if os.path.isfile('./indexes/numsym.pickle') and not word.lower()[0].isalpha():
@@ -277,13 +277,13 @@ def run():
     # extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
     # extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
     # extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
-    with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
-        pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
+    #     pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     # with open('pickle.pickle', 'ab') as handle:
     #     pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     ###Loads file after it has been generated.
-    # loadall('./indexes/0.pickle')
-    # print(words)
+    # loadall('./indexes/2.pickle')
+    # print(len(words.keys()))
 
 
 if __name__ == "__main__":
