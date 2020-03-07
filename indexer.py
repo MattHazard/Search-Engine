@@ -38,6 +38,26 @@ if os.path.isdir('./indexes'):
 else:
     os.mkdir(os.getcwd() + '/' + 'indexes')
 
+##https://goshippo.com/blog/measure-real-size-any-python-object/
+def get_size(obj, seen=None):
+    """Recursively finds size of objects"""
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([get_size(v, seen) for v in obj.values()])
+        size += sum([get_size(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += get_size(obj.__dict__, seen)
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([get_size(i, seen) for i in obj])
+    return size
 
 def createEntry(dict, word):
     global currentDocId
@@ -151,7 +171,7 @@ def processTokens(tokens):
         if badchar == 1:
             continue
 
-        if sys.getsizeof(words) > 10000000:
+        if get_size(words) > 5000000:
             # if ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
             #     pass
             # if ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
