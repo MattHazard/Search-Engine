@@ -10,6 +10,7 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import TweetTokenizer
 from math import log10
 import sys
+from pympler import asizeof
 ag = (97, 103)
 ho = (104, 111)
 ps = (112, 115)
@@ -39,25 +40,29 @@ else:
     os.mkdir(os.getcwd() + '/' + 'indexes')
 
 ##https://goshippo.com/blog/measure-real-size-any-python-object/
-def get_size(obj, seen=None):
-    """Recursively finds size of objects"""
-    size = sys.getsizeof(obj)
-    if seen is None:
-        seen = set()
-    obj_id = id(obj)
-    if obj_id in seen:
-        return 0
-    # Important mark as seen *before* entering recursion to gracefully handle
-    # self-referential objects
-    seen.add(obj_id)
-    if isinstance(obj, dict):
-        size += sum([get_size(v, seen) for v in obj.values()])
-        size += sum([get_size(k, seen) for k in obj.keys()])
-    elif hasattr(obj, '__dict__'):
-        size += get_size(obj.__dict__, seen)
-    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
-        size += sum([get_size(i, seen) for i in obj])
-    return size
+def get_size(obj):
+    marked = {id(obj)}
+    obj_q = [obj]
+    sz = 0
+
+    while obj_q:
+        sz += sum(map(sys.getsizeof, obj_q))
+
+        # Lookup all the object referred to by the object in obj_q.
+        # See: https://docs.python.org/3.7/library/gc.html#gc.get_referents
+        all_refr = ((id(o), o) for o in gc.get_referents(*obj_q))
+
+        # Filter object that are already marked.
+        # Using dict notation will prevent repeated objects.
+        new_refr = {o_id: o for o_id, o in all_refr if o_id not in marked and not isinstance(o, type)}
+
+        # The new obj_q will be the ones that were not marked,
+        # and we will update marked with their ids so we will
+        # not traverse them again.
+        obj_q = new_refr.values()
+        marked.update(new_refr.keys())
+
+    return sz
 
 def createEntry(dict, word):
     global currentDocId
@@ -74,14 +79,14 @@ def createEntry(dict, word):
 ###################################################
 def loadall(filename):
     global words
-
+    tempDict = {}
     with open(filename, 'rb') as fr:
         try:
             while True:
-                words = pickle.load(fr)
+                tempDict = pickle.load(fr)
         except EOFError:
             pass
-
+    return tempDict
 
 # comment
 def tag_visible(element):
@@ -171,7 +176,7 @@ def processTokens(tokens):
         if badchar == 1:
             continue
 
-        if get_size(words) > 5000000:
+        if len(words.keys()) > 500000 or sys.getsizeof(words) > 8000000:
             # if ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
             #     pass
             # if ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
@@ -184,8 +189,8 @@ def processTokens(tokens):
             #     pass
             with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
                 pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-            words = {}
-            currPickleFile += 1
+                words = {}
+                currPickleFile += 1
 
         # if not words:
         #     if os.path.isfile('./indexes/numsym.pickle') and not word.lower()[0].isalpha():
@@ -293,7 +298,8 @@ def traverseDirectories():
 def run():
     # print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
     traverseDirectories()
-
+    d1 = {}
+    d2 = {}
     # extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
     # extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
     # extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
@@ -302,7 +308,13 @@ def run():
     # with open('pickle.pickle', 'ab') as handle:
     #     pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     ###Loads file after it has been generated.
-    # loadall('./indexes/2.pickle')
+    # d1 = loadall('./indexes/0.pickle')
+    # d2 = loadall('./indexes/2.pickle')
+    # print(len(d1.keys()))
+    # print(len(d2.keys()))
+    # d1.update(d2)
+    # print(len(d1.keys()))
+
     # print(len(words.keys()))
 
 
