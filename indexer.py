@@ -6,6 +6,7 @@ import json
 import pickle
 from bs4.element import Comment
 import nltk
+
 nltk.download('punkt')
 from nltk.stem import PorterStemmer
 from nltk.tokenize import TweetTokenizer
@@ -148,7 +149,6 @@ def processTokens(tokens):
     global words
     global currPickleFile
 
-
     stemmedTokens = []
     for word in tokens:
         stemmedTokens.append(stemmer.stem(word))
@@ -162,7 +162,7 @@ def processTokens(tokens):
         if badchar == 1:
             continue
 
-        if len(words.keys()) > 400000 or sys.getsizeof(words) > 8000000:
+        if len(words.keys()) > 500000 or sys.getsizeof(words) > 8000000:
             with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
                 pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
             words = {}
@@ -300,9 +300,9 @@ def finalIndex():
         k = 0
         while k < 11:
             if k != 10:
-                currCharDict = loadall('./finalIndexes/' + str(k) + '.pickle', 'wb')
+                currCharDict = loadall('./finalIndexes/' + str(k) + '.pickle')
                 for k, val in enumerate((list(currIndexDict.keys()))):
-                    if str(val[0]).isalpha():
+                    if not str(val[0]).isnumeric():
                         continue
                     if val in currCharDict:
                         for m, value in enumerate(currIndexDict[val]['postings']):
@@ -321,7 +321,7 @@ def finalIndex():
                 with open('./finalIndexes/' + str(k) + '.pickle', 'wb') as hand:
                     pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
             else:
-                currCharDict = loadall('./finalIndexes/sym.pickle', 'wb')
+                currCharDict = loadall('./finalIndexes/sym.pickle')
                 for k, val in enumerate((list(currIndexDict.keys()))):
                     if str(val[0]).isalnum():
                         continue
@@ -344,14 +344,16 @@ def finalIndex():
             k += 1
         i += 1
 
+
 def run():
     # print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
     traverseDirectories()
     with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    d1 = {}
-    d2 = {}
-    #finalIndex()
+    # d1 = {}
+    # d2 = {}
+    finalIndex()
+    # finalIndex()
     # print("Please enter your search query:")
     # que = input()
     # query = que.split(' ')
