@@ -1,3 +1,4 @@
+import gc
 import posting as posting
 from bs4 import BeautifulSoup
 import os  # allows us to get the directories and file names
@@ -10,16 +11,7 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import TweetTokenizer
 from math import log10
 import sys
-from pympler import asizeof
-ag = (97, 103)
-ho = (104, 111)
-ps = (112, 115)
-tz = (116, 122)
-agDict = {}
-hoDict = {}
-psDict = {}
-tzDict = {}
-numsymDict = {}
+import string
 
 currPickleFile = 0
 currentDocId = 1
@@ -39,30 +31,27 @@ if os.path.isdir('./indexes'):
 else:
     os.mkdir(os.getcwd() + '/' + 'indexes')
 
-##https://goshippo.com/blog/measure-real-size-any-python-object/
-def get_size(obj):
-    marked = {id(obj)}
-    obj_q = [obj]
-    sz = 0
+if os.path.isdir('./finalIndexes'):
+    pass
+else:
+    os.mkdir(os.getcwd() + '/' + 'finalIndexes')
+    i = 0
+    empty = {}
+    while i < 27:
+        if i != 26:
+            with open('./finalIndexes/' + string.ascii_lowercase[i] + '.pickle', 'wb') as handle:
+                pickle.dump(empty, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        i += 1
+    j = 0
+    while j < 11:
+        if j != 10:
+            with open('./finalIndexes/' + str(j) + '.pickle', 'wb') as handle:
+                pickle.dump(empty, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        else:
+            with open('./finalIndexes/sym.pickle', 'wb') as handle:
+                pickle.dump(empty, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        j += 1
 
-    while obj_q:
-        sz += sum(map(sys.getsizeof, obj_q))
-
-        # Lookup all the object referred to by the object in obj_q.
-        # See: https://docs.python.org/3.7/library/gc.html#gc.get_referents
-        all_refr = ((id(o), o) for o in gc.get_referents(*obj_q))
-
-        # Filter object that are already marked.
-        # Using dict notation will prevent repeated objects.
-        new_refr = {o_id: o for o_id, o in all_refr if o_id not in marked and not isinstance(o, type)}
-
-        # The new obj_q will be the ones that were not marked,
-        # and we will update marked with their ids so we will
-        # not traverse them again.
-        obj_q = new_refr.values()
-        marked.update(new_refr.keys())
-
-    return sz
 
 def createEntry(dict, word):
     global currentDocId
@@ -72,10 +61,11 @@ def createEntry(dict, word):
     dict[word.lower()]['postings'][currentDocId] = newPosting.__dict__
     dict[word.lower()]['count'] = 1
 
+
 ###################################################
 # loads all pickle dicts in a file to be loaded to
 # a single dictionary.
-#Ex: dict = loadall(a.txt)
+# Ex: dict = loadall(a.txt)
 ###################################################
 def loadall(filename):
     global words
@@ -87,6 +77,7 @@ def loadall(filename):
         except EOFError:
             pass
     return tempDict
+
 
 # comment
 def tag_visible(element):
@@ -121,10 +112,11 @@ def getUrlFromDocId(docId):
     except:
         print("Error occured while trying to get URL from DocId!")
 
+
 ###################################################
-# Adds a url to the doc id index. 
+# Adds a url to the doc id index.
 # Creates a new file if the doc id goes above
-# specified threshold. 
+# specified threshold.
 ###################################################
 def updateDocIdMap(url):
     global currentDocId
@@ -138,12 +130,14 @@ def updateDocIdMap(url):
         currentIndexFile = open('./DocIdMap/' + str(currentFileNum), 'a')
     currentIndexFile.write(url + '\n')
 
+
 ###################################################
 # Calculates the tf-idf score.
 ###################################################
 def getTfIdf(tf, N, df):
-    idf = log10(N/(df+1))
+    idf = log10(N / (df + 1))
     return tf * idf
+
 
 ###################################################
 # Takes a list of tokens and updates the posting
@@ -152,16 +146,8 @@ def getTfIdf(tf, N, df):
 def processTokens(tokens):
     global currentDocId
     global words
-    global ag
-    global ho
-    global ps
-    global tz
     global currPickleFile
-    global agDict
-    global hoDict
-    global psDict
-    global tzDict
-    global numsymDict
+
 
     stemmedTokens = []
     for word in tokens:
@@ -176,33 +162,11 @@ def processTokens(tokens):
         if badchar == 1:
             continue
 
-        if len(words.keys()) > 500000 or sys.getsizeof(words) > 8000000:
-            # if ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
-            #     pass
-            # if ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
-            #     pass
-            # if ps[0] <= ord(list(words.keys())[0][0]) <= ps[1] and ps[0] <= ord(word.lower()[0]) <= ps[1]:
-            #     pass
-            # if tz[0] <= ord(list(words.keys())[0][0]) <= tz[1] and tz[0] <= ord(word.lower()[0]) <= tz[1]:
-            #     pass
-            # elif not list(words.keys())[0][0].isalpha() and not word.lower()[0].isalpha():
-            #     pass
+        if len(words.keys()) > 400000 or sys.getsizeof(words) > 8000000:
             with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
                 pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-                words = {}
-                currPickleFile += 1
-
-        # if not words:
-        #     if os.path.isfile('./indexes/numsym.pickle') and not word.lower()[0].isalpha():
-        #         loadall('./indexes/numsym.pickle')
-        #     elif ag[0] <= ord(word.lower()[0]) <= ag[1] and os.path.isfile('./indexes/ag.pickle'):
-        #         loadall('./indexes/ag.pickle')
-        #     elif ho[0] <= ord(word.lower()[0]) <= ho[1] and os.path.isfile('./indexes/ag.pickle'):
-        #         loadall('./indexes/ho.pickle')
-        #     elif ps[0] <= ord(word.lower()[0]) <= ps[1] and os.path.isfile('./indexes/ag.pickle'):
-        #         loadall('./indexes/ps.pickle')
-        #     elif tz[0] <= ord(word.lower()[0]) <= tz[1] and os.path.isfile('./indexes/ag.pickle'):
-        #         loadall('./indexes/tz.pickle')
+            words = {}
+            currPickleFile += 1
 
         if word.lower() in words:
             if currentDocId in words[word.lower()]['postings']:
@@ -213,12 +177,13 @@ def processTokens(tokens):
                 ## Once we have everything indexed we will have the df (words[word.lower()]['count']) and the N (size of corpus)
                 ## When we get a query we can just get the tf-idf while we are searching for the words?
                 #############################
-                #update tf
-                words[word.lower()]['postings'][currentDocId]['tf'] = words[word.lower()]['postings'][currentDocId]['count'] / len(stemmedTokens)
+                # update tf
+                words[word.lower()]['postings'][currentDocId]['tf'] = words[word.lower()]['postings'][currentDocId][
+                                                                          'count'] / len(stemmedTokens)
             else:
                 newPosting = posting.Posting(currentDocId, 0, 1)
                 words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
-                #set up the tf
+                # set up the tf
                 words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
             words[word.lower()]['count'] += 1
         else:
@@ -230,22 +195,6 @@ def processTokens(tokens):
             # set up the tf
             words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
 
-        # if not word.lower()[0].isalpha():
-        #     with open('./indexes/numsym.pickle', 'wb') as handle:
-        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        # elif ag[0] <= ord(list(words.keys())[0][0]) <= ag[1] and ag[0] <= ord(word.lower()[0]) <= ag[1]:
-        #     with open('./indexes/ag.pickle', 'wb') as handle:
-        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        # elif ho[0] <= ord(list(words.keys())[0][0]) <= ho[1] and ho[0] <= ord(word.lower()[0]) <= ho[1]:
-        #     with open('./indexes/ho.pickle', 'wb') as handle:
-        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        # elif ps[0] <= ord(list(words.keys())[0][0]) <= ps[1] and ps[0] <= ord(word.lower()[0]) <= ps[1]:
-        #     with open('./indexes/ps.pickle', 'wb') as handle:
-        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        # elif tz[0] <= ord(list(words.keys())[0][0]) <= tz[1] and tz[0] <= ord(word.lower()[0]) <= tz[1]:
-        #     with open('./indexes/tz.pickle', 'wb') as handle:
-        #         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
 
 ###################################################
 # Extracts all the words from an html file and
@@ -256,16 +205,17 @@ def extractTokensFromJson(filePath):
 
     json_data = open(filePath)
     data = json.load(json_data)
-    updateDocIdMap(str(data['url'])) 
+    updateDocIdMap(str(data['url']))
     soup = BeautifulSoup(data['content'], features='lxml')
     text = soup.get_text(" ", strip=True)
-    
+
     tokenizer = TweetTokenizer()
     tokens = tokenizer.tokenize(text)
 
     processTokens(tokens)
 
     currentDocId += 1
+
 
 ###################################################
 # Need to get this part finished ASAP so we can
@@ -283,7 +233,7 @@ def extractTokensFromJson(filePath):
 
 
 ###################################################
-# runs through all directories and prints out a 
+# runs through all directories and prints out a
 # list of files within them.
 ###################################################
 def traverseDirectories():
@@ -292,21 +242,169 @@ def traverseDirectories():
         for file in files:
             extractTokensFromJson(root + '/' + file)
 
+
 ###################################################
 # Runs the indexer.
 ###################################################
+
+def finalIndex():
+    files = next(os.walk(os.getcwd() + '/indexes'))[2]
+    numF = len(files)
+    i = 0
+    # sum = 0
+    # n = 0
+    # while n < 27:
+    #     if n != 26:
+    #         currChar = string.ascii_lowercase[n]
+    #         test = loadall('./finalIndexes/' + str(currChar) + '.pickle')
+    #         sum += len(test)
+    #     else:
+    #         test = loadall('./finalIndexes/numsyms.pickle')
+    #         sum += len(test)
+    #     n += 1
+    # print(sum)
+    # exit()
+    # print(test)
+    # exit()
+    # print(numF)
+    while i < numF:
+        currIndexDict = loadall('./indexes/' + str(i) + '.pickle')
+        # print(list(currIndexDict.keys())[0])
+        j = 0
+        while j < 27:
+            # print(currChar)
+            if j != 26:
+                currChar = string.ascii_lowercase[j]
+                currCharDict = loadall('./finalIndexes/' + currChar + '.pickle')
+                for k, val in enumerate((list(currIndexDict.keys()))):
+                    if str(val[0]) != str(currChar):
+                        continue
+                    if val in currCharDict:
+                        for m, value in enumerate(currIndexDict[val]['postings']):
+                            newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
+                            currCharDict[val]['postings'][value] = newPosting.__dict__
+                            currCharDict[val]['count'] += 1
+                    else:
+                        # this line
+                        currCharDict[val] = {}
+                        currCharDict[val]['postings'] = {}
+                        currCharDict[val]['count'] = 0
+                        for m, value in enumerate(currIndexDict[val]['postings']):
+                            newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
+                            currCharDict[val]['postings'][value] = newPosting.__dict__
+                            currCharDict[val]['count'] += 1
+                with open('./finalIndexes/' + currChar + '.pickle', 'wb') as hand:
+                    pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
+            j += 1
+
+        k = 0
+        while k < 11:
+            if k != 10:
+                currCharDict = loadall('./finalIndexes/' + str(k) + '.pickle', 'wb')
+                for k, val in enumerate((list(currIndexDict.keys()))):
+                    if str(val[0]).isalpha():
+                        continue
+                    if val in currCharDict:
+                        for m, value in enumerate(currIndexDict[val]['postings']):
+                            newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
+                            currCharDict[val]['postings'][value] = newPosting.__dict__
+                            currCharDict[val]['count'] += 1
+                    else:
+                        # this line
+                        currCharDict[val] = {}
+                        currCharDict[val]['postings'] = {}
+                        currCharDict[val]['count'] = 0
+                        for m, value in enumerate(currIndexDict[val]['postings']):
+                            newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
+                            currCharDict[val]['postings'][value] = newPosting.__dict__
+                            currCharDict[val]['count'] += 1
+                with open('./finalIndexes/' + str(k) + '.pickle', 'wb') as hand:
+                    pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
+            else:
+                currCharDict = loadall('./finalIndexes/sym.pickle', 'wb')
+                for k, val in enumerate((list(currIndexDict.keys()))):
+                    if str(val[0]).isalnum():
+                        continue
+                    if val in currCharDict:
+                        for m, value in enumerate(currIndexDict[val]['postings']):
+                            newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
+                            currCharDict[val]['postings'][value] = newPosting.__dict__
+                            currCharDict[val]['count'] += 1
+                    else:
+                        # this line
+                        currCharDict[val] = {}
+                        currCharDict[val]['postings'] = {}
+                        currCharDict[val]['count'] = 0
+                        for m, value in enumerate(currIndexDict[val]['postings']):
+                            newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
+                            currCharDict[val]['postings'][value] = newPosting.__dict__
+                            currCharDict[val]['count'] += 1
+                with open('./finalIndexes/sym.pickle', 'wb') as hand:
+                    pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
+            k += 1
+        i += 1
+
 def run():
     # print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
     traverseDirectories()
+    with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
+        pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     d1 = {}
     d2 = {}
+    #finalIndex()
+    # print("Please enter your search query:")
+    # que = input()
+    # query = que.split(' ')
+    # li = []
+    # for i in query:
+    #     d = {}
+    #     if str(i[0]).isalpha():
+    #         words = loadall('finalIndexes/' + str(i[0]).lower() + '.pickle')
+    #     else:
+    #         words = loadall('finalIndexes/numsyms.pickle')
+    #     #print(words[stemmer.stem(i.lower())]['postings'])
+    #     for j in words[stemmer.stem(i.lower())]['postings']:
+    #         d[j] = 1
+    #     li.append(d)
+    # new = {}
+    # for i in li:
+    #     for j in i:
+    #         if j in new.keys():
+    #             new[j] += 1
+    #         else:
+    #             new[j] = 1
+    # urlL = []
+    # for i in new:
+    #     if new[i] is len(li):
+    #         urlL.append(getUrlFromDocId(int(i)))
+    # print(urlL)
+    # exit()
+
+    # words = loadall('pickle.pickle')
+    # print("Please enter your search query:")
+    # que = input()
+    # query = que.split(' ')
+    # li = []
+    # for i in query:
+    #     d = {}
+    #     for j in words[stemmer.stem(i.lower())]['postings']:
+    #         d[j] = 1
+    #     li.append(d)
+    # new = {}
+    # for i in li:
+    #     for j in i:
+    #         if j in new.keys():
+    #             new[j] += 1
+    #         else:
+    #             new[j] = 1
+    # urlL = []
+    # for i in new:
+    #     if new[i] is len(li):
+    #         urlL.append(getUrlFromDocId(int(i)))
+    # print(urlL)
     # extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
     # extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
     # extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
-    with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
-        pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    # with open('pickle.pickle', 'ab') as handle:
-    #     pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     ###Loads file after it has been generated.
     # d1 = loadall('./indexes/0.pickle')
     # d2 = loadall('./indexes/2.pickle')
