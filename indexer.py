@@ -297,12 +297,12 @@ def finalIndex():
                     pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
             j += 1
 
-        k = 0
-        while k < 11:
-            if k != 10:
-                currCharDict = loadall('./finalIndexes/' + str(k) + '.pickle')
+        a = 0
+        while a < 11:
+            if a != 10:
+                currCharDict = loadall('./finalIndexes/' + str(a) + '.pickle')
                 for k, val in enumerate((list(currIndexDict.keys()))):
-                    if not str(val[0]).isnumeric():
+                    if str(val[0]) != str(a):
                         continue
                     if val in currCharDict:
                         for m, value in enumerate(currIndexDict[val]['postings']):
@@ -318,7 +318,7 @@ def finalIndex():
                             newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
                             currCharDict[val]['postings'][value] = newPosting.__dict__
                             currCharDict[val]['count'] += 1
-                with open('./finalIndexes/' + str(k) + '.pickle', 'wb') as hand:
+                with open('./finalIndexes/' + str(a) + '.pickle', 'wb') as hand:
                     pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
             else:
                 currCharDict = loadall('./finalIndexes/sym.pickle')
@@ -341,15 +341,15 @@ def finalIndex():
                             currCharDict[val]['count'] += 1
                 with open('./finalIndexes/sym.pickle', 'wb') as hand:
                     pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
-            k += 1
+            a += 1
         i += 1
 
 
 def run():
-    # print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
-    traverseDirectories()
-    with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
-        pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    #print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
+    #traverseDirectories()
+    #with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
+        #pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     # d1 = {}
     # d2 = {}
     finalIndex()
