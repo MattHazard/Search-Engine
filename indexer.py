@@ -179,12 +179,12 @@ def processTokens(tokens):
                 #############################
                 # update tf
                 words[word.lower()]['postings'][currentDocId]['tf'] = words[word.lower()]['postings'][currentDocId][
-                                                                          'count'] / len(stemmedTokens)
+                                                                          'count']
             else:
                 newPosting = posting.Posting(currentDocId, 0, 1)
                 words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
                 # set up the tf
-                words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
+                words[word.lower()]['postings'][currentDocId]['tf'] = 1
             words[word.lower()]['count'] += 1
         else:
             newPosting = posting.Posting(currentDocId, 0, 1)
@@ -193,7 +193,7 @@ def processTokens(tokens):
             words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
             words[word.lower()]['count'] = 1
             # set up the tf
-            words[word.lower()]['postings'][currentDocId]['tf'] = 1 / len(stemmedTokens)
+            words[word.lower()]['postings'][currentDocId]['tf'] = 1
 
 
 ###################################################
@@ -386,9 +386,9 @@ def calcTFIDF():
 
 def run():
     #print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
-    #traverseDirectories()
-    #with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
-        #pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    traverseDirectories()
+    with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
+        pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
     # n = 0
     # sum = 0
     # while n < 36:
