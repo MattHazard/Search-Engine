@@ -1,3 +1,7 @@
+# IF YOU HAVE ANY QUESTIONS ABOUT THE IMPLEMENTATION, we can clear things up in the interview
+# I have provided basic explanations of functions in the comments throughout the files
+# -Matthew Mueller
+
 import gc
 import posting as posting
 from bs4 import BeautifulSoup
