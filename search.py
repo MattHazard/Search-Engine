@@ -7,7 +7,7 @@ from nltk.tokenize import TweetTokenizer
 # Returns a list of stemmed tokens.
 ######################################
 from indexer import loadall, stemmer, getUrlFromDocId
-
+import time
 words = {}
 #stemmer = PorterStemmer()
 
@@ -31,6 +31,7 @@ def search(query):
     # do and operation on all the postings by doc id to find docs with all the tokens
     # Those urls are contenders
     # Don't need tf-idf working just yet.
+    tic = time.perf_counter()
     query = que.split(' ')
     li = []
     for i in query:
@@ -55,6 +56,8 @@ def search(query):
         if new[i] is len(li):
             urlL.append(getUrlFromDocId(int(i)))
     print(urlL)
+    toc = time.perf_counter()
+    print('Query performed in ' + str(toc - tic) + 'seconds')
 
 
 if __name__ == "__main__":
