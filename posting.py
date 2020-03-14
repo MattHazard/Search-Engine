@@ -6,6 +6,7 @@ class Posting:
         self.count = count
         self.tf = 0
 
+    #unused
     def updateTf(self, wordsInD):
         tf = count / wordsInD
 

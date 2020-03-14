@@ -21,6 +21,7 @@ words = {}
 stemmer = PorterStemmer()
 count_in_doc = {}
 
+# Here we create all the folders needed for the indexing
 if os.path.isdir('./DocIdMap'):
     currentIndexFile = open('./DocIdMap/' + str(currentFileNum), 'a')
 else:
@@ -137,7 +138,7 @@ def updateDocIdMap(url):
 ###################################################
 def getTfIdf(tf, N, df):
     idf = log10(N / df)
-    return (1+log10(tf)) * idf
+    return (1 + log10(tf)) * idf
 
 
 ###################################################
@@ -179,7 +180,7 @@ def processTokens(tokens):
                 #############################
                 # update tf
                 words[word.lower()]['postings'][currentDocId]['tf'] = words[word.lower()]['postings'][currentDocId][
-                                                                          'count']
+                    'count']
             else:
                 newPosting = posting.Posting(currentDocId, 0, 1)
                 words[word.lower()]['postings'][currentDocId] = newPosting.__dict__
@@ -247,6 +248,8 @@ def traverseDirectories():
 # Runs the indexer.
 ###################################################
 
+# Here we run through and rearrange the index files into more useful files that we will use for our query
+# Sounds a bit inefficient but it is actually very fast
 def finalIndex():
     files = next(os.walk(os.getcwd() + '/indexes'))[2]
     numF = len(files)
@@ -350,6 +353,9 @@ def finalIndex():
             a += 1
         i += 1
 
+
+# Calculating all the TFIDF values at the end
+# Very fast
 def calcTFIDF():
     sum = 0
     n = 0
@@ -359,7 +365,7 @@ def calcTFIDF():
             test = loadall('./finalIndexes/' + str(currChar) + '.pickle')
             sum += len(test)
         else:
-            test = loadall('./finalIndexes/' + str(n-26) + '.pickle')
+            test = loadall('./finalIndexes/' + str(n - 26) + '.pickle')
             sum += len(test)
         n += 1
     n = 0
@@ -370,105 +376,28 @@ def calcTFIDF():
             for k, val in enumerate((list(test.keys()))):
                 test[val]['df'] = len(test[val]['postings'])
                 for m, ins in enumerate((list(test[val]['postings'].keys()))):
-                    test[val]['postings'][ins]['tfidf'] = getTfIdf(test[val]['postings'][ins]['tf'], sum, test[val]['df'])
+                    test[val]['postings'][ins]['tfidf'] = getTfIdf(test[val]['postings'][ins]['tf'], sum,
+                                                                   test[val]['df'])
             with open('./finalIndexes/' + currChar + '.pickle', 'wb') as hand:
                 pickle.dump(test, hand, protocol=pickle.HIGHEST_PROTOCOL)
         else:
-            test = loadall('./finalIndexes/' + str(n-26) + '.pickle')
+            test = loadall('./finalIndexes/' + str(n - 26) + '.pickle')
             for k, val in enumerate((list(test.keys()))):
                 test[val]['df'] = len(test[val]['postings'])
                 for m, ins in enumerate((list(test[val]['postings'].keys()))):
-                    test[val]['postings'][ins]['tfidf'] = getTfIdf(test[val]['postings'][ins]['tf'], sum, test[val]['df'])
-            with open('./finalIndexes/' + str(n-26) + '.pickle', 'wb') as hand:
+                    test[val]['postings'][ins]['tfidf'] = getTfIdf(test[val]['postings'][ins]['tf'], sum,
+                                                                   test[val]['df'])
+            with open('./finalIndexes/' + str(n - 26) + '.pickle', 'wb') as hand:
                 pickle.dump(test, hand, protocol=pickle.HIGHEST_PROTOCOL)
         n += 1
 
 
 def run():
-    #print("Testing Tf-Idf for doc that has tf of 0.03 (3/100) and appears 1000 times out of 10,000,000 size corpus" + str(getTfIdf(.03, 10000000, 1000)))
     traverseDirectories()
     with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
         pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    # n = 0
-    # sum = 0
-    # while n < 36:
-    #     if n < 26:
-    #         currChar = string.ascii_lowercase[n]
-    #         test = loadall('./finalIndexes/' + str(currChar) + '.pickle')
-    #         for i in test:
-    #             print(test[i])
-    #         sum += len(test)
-    #     else:
-    #         test = loadall('./finalIndexes/' + str(n-26) + '.pickle')
-    #         sum += len(test)
-    #     n += 1
     finalIndex()
     calcTFIDF()
-    # d1 = {}
-    # d2 = {}
-    # finalIndex()
-    # print("Please enter your search query:")
-    # que = input()
-    # query = que.split(' ')
-    # li = []
-    # for i in query:
-    #     d = {}
-    #     if str(i[0]).isalpha():
-    #         words = loadall('finalIndexes/' + str(i[0]).lower() + '.pickle')
-    #     else:
-    #         words = loadall('finalIndexes/numsyms.pickle')
-    #     #print(words[stemmer.stem(i.lower())]['postings'])
-    #     for j in words[stemmer.stem(i.lower())]['postings']:
-    #         d[j] = 1
-    #     li.append(d)
-    # new = {}
-    # for i in li:
-    #     for j in i:
-    #         if j in new.keys():
-    #             new[j] += 1
-    #         else:
-    #             new[j] = 1
-    # urlL = []
-    # for i in new:
-    #     if new[i] is len(li):
-    #         urlL.append(getUrlFromDocId(int(i)))
-    # print(urlL)
-    # exit()
-
-    # words = loadall('pickle.pickle')
-    # print("Please enter your search query:")
-    # que = input()
-    # query = que.split(' ')
-    # li = []
-    # for i in query:
-    #     d = {}
-    #     for j in words[stemmer.stem(i.lower())]['postings']:
-    #         d[j] = 1
-    #     li.append(d)
-    # new = {}
-    # for i in li:
-    #     for j in i:
-    #         if j in new.keys():
-    #             new[j] += 1
-    #         else:
-    #             new[j] = 1
-    # urlL = []
-    # for i in new:
-    #     if new[i] is len(li):
-    #         urlL.append(getUrlFromDocId(int(i)))
-    # print(urlL)
-    # extractTokensFromJson('DEV/scale_ics_uci_edu/d93a8cb31884b6fcb38d121d07176dc6752e5bf1889b3b8fa313672028a65824.json')
-    # extractTokensFromJson('DEV/dynamo_ics_uci_edu/0c961803ef7f746bd7a4f5faf3e134546dec9a75719c214bfea2ee2652e5f241.json')
-    # extractTokensFromJson('DEV/cml_ics_uci_edu/0f32f6f497d71106ff8e3a26fdf59a538771b01bed110afc8cbdc23ba804818a.json')
-    ###Loads file after it has been generated.
-    # d1 = loadall('./indexes/0.pickle')
-    # d2 = loadall('./indexes/2.pickle')
-    # print(len(d1.keys()))
-    # print(len(d2.keys()))
-    # d1.update(d2)
-    # print(len(d1.keys()))
-
-    # print(len(words.keys()))
 
 
 if __name__ == "__main__":
