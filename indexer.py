@@ -136,8 +136,8 @@ def updateDocIdMap(url):
 # Calculates the tf-idf score.
 ###################################################
 def getTfIdf(tf, N, df):
-    idf = log10(N / (df + 1))
-    return tf * idf
+    idf = log10(N / df)
+    return (1+log10(tf)) * idf
 
 
 ###################################################
@@ -284,6 +284,7 @@ def finalIndex():
                             newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
                             currCharDict[val]['postings'][value] = newPosting.__dict__
                             currCharDict[val]['count'] += 1
+                            currCharDict[val]['postings'][value]['tf'] = currIndexDict[val]['postings'][value]['tf']
                     else:
                         # this line
                         currCharDict[val] = {}
@@ -293,6 +294,7 @@ def finalIndex():
                             newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
                             currCharDict[val]['postings'][value] = newPosting.__dict__
                             currCharDict[val]['count'] += 1
+                            currCharDict[val]['postings'][value]['tf'] = currIndexDict[val]['postings'][value]['tf']
                 with open('./finalIndexes/' + currChar + '.pickle', 'wb') as hand:
                     pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
             j += 1
@@ -309,6 +311,7 @@ def finalIndex():
                             newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
                             currCharDict[val]['postings'][value] = newPosting.__dict__
                             currCharDict[val]['count'] += 1
+                            currCharDict[val]['postings'][value]['tf'] = currIndexDict[val]['postings'][value]['tf']
                     else:
                         # this line
                         currCharDict[val] = {}
@@ -318,6 +321,7 @@ def finalIndex():
                             newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
                             currCharDict[val]['postings'][value] = newPosting.__dict__
                             currCharDict[val]['count'] += 1
+                            currCharDict[val]['postings'][value]['tf'] = currIndexDict[val]['postings'][value]['tf']
                 with open('./finalIndexes/' + str(a) + '.pickle', 'wb') as hand:
                     pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
             else:
@@ -330,6 +334,7 @@ def finalIndex():
                             newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
                             currCharDict[val]['postings'][value] = newPosting.__dict__
                             currCharDict[val]['count'] += 1
+                            currCharDict[val]['postings'][value]['tf'] = currIndexDict[val]['postings'][value]['tf']
                     else:
                         # this line
                         currCharDict[val] = {}
@@ -339,10 +344,44 @@ def finalIndex():
                             newPosting = posting.Posting(value, 0, currIndexDict[val]['postings'][value]['count'])
                             currCharDict[val]['postings'][value] = newPosting.__dict__
                             currCharDict[val]['count'] += 1
+                            currCharDict[val]['postings'][value]['tf'] = currIndexDict[val]['postings'][value]['tf']
                 with open('./finalIndexes/sym.pickle', 'wb') as hand:
                     pickle.dump(currCharDict, hand, protocol=pickle.HIGHEST_PROTOCOL)
             a += 1
         i += 1
+
+def calcTFIDF():
+    sum = 0
+    n = 0
+    while n < 36:
+        if n < 26:
+            currChar = string.ascii_lowercase[n]
+            test = loadall('./finalIndexes/' + str(currChar) + '.pickle')
+            sum += len(test)
+        else:
+            test = loadall('./finalIndexes/' + str(n-26) + '.pickle')
+            sum += len(test)
+        n += 1
+    n = 0
+    while n < 36:
+        if n < 26:
+            currChar = string.ascii_lowercase[n]
+            test = loadall('./finalIndexes/' + str(currChar) + '.pickle')
+            for k, val in enumerate((list(test.keys()))):
+                test[val]['df'] = len(test[val]['postings'])
+                for m, ins in enumerate((list(test[val]['postings'].keys()))):
+                    test[val]['postings'][ins]['tfidf'] = getTfIdf(test[val]['postings'][ins]['tf'], sum, test[val]['df'])
+            with open('./finalIndexes/' + currChar + '.pickle', 'wb') as hand:
+                pickle.dump(test, hand, protocol=pickle.HIGHEST_PROTOCOL)
+        else:
+            test = loadall('./finalIndexes/' + str(n-26) + '.pickle')
+            for k, val in enumerate((list(test.keys()))):
+                test[val]['df'] = len(test[val]['postings'])
+                for m, ins in enumerate((list(test[val]['postings'].keys()))):
+                    test[val]['postings'][ins]['tfidf'] = getTfIdf(test[val]['postings'][ins]['tf'], sum, test[val]['df'])
+            with open('./finalIndexes/' + str(n-26) + '.pickle', 'wb') as hand:
+                pickle.dump(test, hand, protocol=pickle.HIGHEST_PROTOCOL)
+        n += 1
 
 
 def run():
@@ -350,9 +389,23 @@ def run():
     #traverseDirectories()
     #with open('./indexes/' + str(currPickleFile) + '.pickle', 'wb') as handle:
         #pickle.dump(words, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    # n = 0
+    # sum = 0
+    # while n < 36:
+    #     if n < 26:
+    #         currChar = string.ascii_lowercase[n]
+    #         test = loadall('./finalIndexes/' + str(currChar) + '.pickle')
+    #         for i in test:
+    #             print(test[i])
+    #         sum += len(test)
+    #     else:
+    #         test = loadall('./finalIndexes/' + str(n-26) + '.pickle')
+    #         sum += len(test)
+    #     n += 1
+    finalIndex()
+    calcTFIDF()
     # d1 = {}
     # d2 = {}
-    finalIndex()
     # finalIndex()
     # print("Please enter your search query:")
     # que = input()
